@@ -1,0 +1,102 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Storage
+*.db
+*.sqlite
+*.sqlite3
+liftra.db
+liftra_server.db
+backups/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+/data
+/storage
+/tmp
+/cache
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Dependency directories
+node_modules/
+
+# Android
+*.apk
+*.aab
+build/
+.gradle/
+
+# Web
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Encryption keys
+*.key
+*.pem
+*.crt
+*.cer
+
+# Configuration files (keep these in .gitignore to avoid committing sensitive data)
+config.yaml
+config.yml
+secrets.yaml
+secrets.yml
