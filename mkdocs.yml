@@ -1,0 +1,94 @@
+site_name: Liftra
+site_description: Comprehensive Personal Finance Tracking Application
+site_author: vindhavn
+site_url: https://github.com/vindhavn/liftra
+
+repo_name: vindhavn/liftra
+repo_url: https://github.com/vindhavn/liftra
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+      - Installation: user-guide/installation.md
+      - Configuration: user-guide/configuration.md
+      - Accounts: user-guide/accounts.md
+      - Transactions: user-guide/transactions.md
+      - Reports: user-guide/reports.md
+      - Import/Export: user-guide/import-export.md
+  - Developer Guide:
+      - Architecture: developer-guide/architecture.md
+      - API Reference: developer-guide/api.md
+      - Contributing: developer-guide/contributing.md
+      - Testing: developer-guide/testing.md
+  - About:
+      - License: about/license.md
+      - Changelog: about/changelog.md
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.arithmatex:
+      generic: true
+  - footnotes
+  - def_list
+  - tables
+  - abbr
+  - attr_list
+  - md_in_html
+  - admonition
+  - toc:
+      permalink: true
+      baselevel: 1
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            show_root_heading: true
+            heading_level: 2
+            inherited_members: true
+            members_order: source
+            filters: ["!^_"]
+
+copyright: |
+  &copy; 2024 <a href="https://github.com/vindhavn" target="_blank" rel="noopener">vindhavn</a>
