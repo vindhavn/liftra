@@ -480,6 +480,11 @@ Examples:
             default=None,
             help="Account ID to import into"
         )
+        import_parser.add_argument(
+            "--preview",
+            action="store_true",
+            help="Preview data without importing"
+        )
         import_parser.set_defaults(func=self._import_data)
         
         export_parser = self.subparsers.add_parser(
@@ -921,15 +926,142 @@ Examples:
 
     async def _import_data(self, args: Any, storage: StorageManager) -> int:
         """Import data from a file."""
-        print(f"Import from {args.file} (format: {args.format or 'auto'})")
-        print("Note: Import functionality will be implemented in a future update.")
-        return 0
+        from liftra.services.import_export import detect_format, CSVImporter, ImportFormat
+        from pathlib import Path
+        
+        file_path = args.file
+        format_arg = args.format
+        
+        # Detect format if not specified
+        if format_arg is None:
+            detected_format = detect_format(file_path)
+            print(f"Detected format: {detected_format.value}")
+        else:
+            detected_format = ImportFormat(format_arg)
+            print(f"Using specified format: {detected_format.value}")
+        
+        # For now, only CSV is implemented
+        if detected_format != ImportFormat.CSV:
+            print(f"Error: Format '{detected_format.value}' is not yet supported.")
+            print("Currently only CSV format is supported.")
+            return 1
+        
+        # Import using CSV importer
+        importer = CSVImporter()
+        
+        try:
+            # Preview if requested
+            if getattr(args, "preview", False):
+                preview = importer.preview_import(
+                    file_path,
+                    entity_type="transaction",
+                    account_id=args.account,
+                )
+                print(f"\nPreview: {preview['valid_rows']} valid rows out of {preview['total_rows']}")
+                print("\nSample data:")
+                for i, sample in enumerate(preview["sample_data"], 1):
+                    print(f"  {i}. {sample.get('description', 'No description')} - {sample.get('amount', 0)} {sample.get('currency_code', 'GBP')}")
+                return 0
+            
+            # Full import
+            entities = importer.import_file(
+                file_path,
+                entity_type="transaction",
+                account_id=args.account,
+            )
+            
+            valid_entities = importer.validate_data(entities, "transaction")
+            
+            print(f"Imported {len(valid_entities)} valid transactions out of {len(entities)} total")
+            
+            # For now, just print what would be imported
+            # In a full implementation, we would save to storage
+            print("\nTransactions to be imported:")
+            for i, entity in enumerate(valid_entities, 1):
+                print(f"  {i}. {entity.get('description', 'No description')} - {entity.get('amount', 0)} {entity.get('currency_code', 'GBP')}")
+            
+            print("\nNote: Actual import to database will be implemented in a future update.")
+            return 0
+            
+        except Exception as e:
+            print(f"Error importing file: {e}")
+            return 1
 
     async def _export_data(self, args: Any, storage: StorageManager) -> int:
         """Export data to a file."""
-        print(f"Export to {args.output or 'stdout'} (format: {args.format})")
-        print("Note: Export functionality will be implemented in a future update.")
-        return 0
+        from liftra.services.import_export import CSVExporter, ImportFormat
+        from pathlib import Path
+        
+        format_arg = args.format or "csv"
+        
+        # For now, only CSV is implemented
+        if format_arg != "csv":
+            print(f"Error: Format '{format_arg}' is not yet supported.")
+            print("Currently only CSV format is supported.")
+            return 1
+        
+        exporter = CSVExporter()
+        
+        try:
+            # Get data from storage
+            if args.account:
+                # Export transactions for specific account
+                query = Query(
+                    entity_type="Transaction",
+                    filters={"account_id": {"eq": args.account}},
+                    limit=1000,
+                )
+                result = await storage.list("Transaction", query)
+                transactions = result.items
+                
+                if not transactions:
+                    print(f"No transactions found for account {args.account}")
+                    return 0
+                
+                # Convert to Transaction objects for export
+                from liftra.core.models import Transaction
+                transaction_objects = [Transaction.from_dict(t) for t in transactions]
+                
+                # Export to file or stdout
+                if args.output:
+                    output_path = Path(args.output)
+                    exporter.export_transactions(output_path, transaction_objects)
+                    print(f"Exported {len(transaction_objects)} transactions to {output_path}")
+                else:
+                    csv_content = exporter.export_to_string(
+                        [t.to_dict() for t in transaction_objects],
+                        entity_type="transaction",
+                    )
+                    print(csv_content)
+            else:
+                # Export all accounts
+                query = Query(entity_type="Account", limit=1000)
+                result = await storage.list("Account", query)
+                accounts = result.items
+                
+                if not accounts:
+                    print("No accounts found")
+                    return 0
+                
+                from liftra.core.models import Account
+                account_objects = [Account.from_dict(a) for a in accounts]
+                
+                if args.output:
+                    output_path = Path(args.output)
+                    exporter.export_accounts(output_path, account_objects)
+                    print(f"Exported {len(account_objects)} accounts to {output_path}")
+                else:
+                    csv_content = exporter.export_to_string(
+                        [a.to_dict() for a in account_objects],
+                        entity_type="account",
+                    )
+                    print(csv_content)
+            
+            return 0
+            
+        except Exception as e:
+            print(f"Error exporting data: {e}")
+            return 1
 
 
 def main() -> None:
